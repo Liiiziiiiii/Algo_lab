@@ -1,39 +1,38 @@
 import unittest
 
-from main import peak_length
+from main import TreeNode
 
 
-class TestFunc(unittest.TestCase):
-    def test_empty_array(self):
-        arr = [1, 1, 1]
-        result = peak_length(arr)
-        self.assertIsNone(result)
+class TestTreeNodeMethods(unittest.TestCase):
+    def test_get_height(self):
+        # Створення дерева для тестування
+        root = TreeNode(1)
+        root.left = TreeNode(2)
+        root.right = TreeNode(3)
+        root.left.left = TreeNode(4)
+        root.left.right = TreeNode(5)
 
-    def test_single_peak(self):
-        arr = [1, 7, 2]
-        result = peak_length(arr)
-        self.assertEqual(result, 3)
+        self.assertEqual(root.get_height(), 3)
 
-    def test_multiple_peaks(self):
-        arr = [1, 3, 5, 4, 2, 8, 3, 7, 9, 5]
-        result = peak_length(arr)
-        self.assertEqual(result, 6)
+    def test_diameter(self):
+        # Створення дерева для тестування
+        root = TreeNode(1)
+        root.left = TreeNode(2)
+        root.right = TreeNode(3)
+        root.left.left = TreeNode(4)
+        root.left.right = TreeNode(5)
 
-    def test_uneven_peaks(self):
-        arr = [3, 4, 6, 4, 1, 2, 3, 4, 5, 3]
-        result = peak_length(arr)
-        self.assertEqual(result, 6)
+        self.assertEqual(root.diameter(), 4)
 
-    def test_no_peaks(self):
-        arr = [1, 2, 3, 4, 5]
-        result = peak_length(arr)
-        self.assertIsNone(result)
+    def test_maximum_diameter(self):
+        # Створення дерева для тестування
+        root = TreeNode(1)
+        root.left = TreeNode(2)
+        root.right = TreeNode(3)
+        root.left.left = TreeNode(4)
+        root.left.right = TreeNode(5)
 
-    def test_2_element(self):
-        arr = [1, 2]
-        result = peak_length(arr)
-        self.assertIsNone(result)
-
+        self.assertEqual(root.maximum_diameter(), 3)
 
 if __name__ == '__main__':
     unittest.main()

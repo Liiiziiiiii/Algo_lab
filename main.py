@@ -1,39 +1,61 @@
-def func_cow(arr, count_cow):
-    arr.sort()
-    final_number = 0
-    number = 1
-    current_stable_with_cow = arr[0]
-    count_cow -= 1
-    copy_count_cow = count_cow
-    cow_arr = []
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val  # Дані вузла
+        self.left = left  # Ліва дитина
+        self.right = right  # Права дитина
 
-    while number != arr[-1]:
-        if copy_count_cow == 0:
-            final_number = number
+    def print_tree(self):
+        print(self.val)
+        # if self.left:
+        #     self.left.val.print_tree()
+        # if self.right:
+        #     self.right.val.print_tree()
 
-        copy_count_cow = count_cow
-        number += 1
-        # print("number", number)
-        i = 0
+    def get_height(self):
+        arr = []
+        left = 0
+        right = 0
+        if self.left:
+            left = self.left.get_height()
+        if self.right:
+            right = self.right.get_height()
 
-        for i, value in enumerate(arr[:-1]):
-            if number <= arr[i + 1] - current_stable_with_cow:
-                current_stable_with_cow = arr[i + 1]
-                # print("current_stable_with_cow", current_stable_with_cow)
-                cow_arr.append(current_stable_with_cow)
-                # if len(cow_arr) == final_number+1:
-                #     print("cow_arr", cow_arr)
-                copy_count_cow -= 1
-                if copy_count_cow == 0:
-                    cow_arr.clear()
-                    cow_arr.append(arr[0])
-                    current_stable_with_cow = arr[0]
-                    break
+        if self.val:
+            arr.append(self.val)
 
-    print(final_number)
-    return final_number
+        print(arr)
+
+        return max(left, right) + 1
+
+    def diameter(self):
+        if self is None:
+            return 0
+        lheight = self.left.get_height() if self.left else 0
+        rheight = self.right.get_height() if self.right else 0
+
+        return lheight + rheight
+
+    def maximum_diameter(self):
+        left_diameter = self.left.diameter() if self.left else 0
+        right_diameter = self.right.diameter() if self.right else 0
+
+        return max(left_diameter, right_diameter)
 
 
-func_cow([1, 2, 3, 4, 5, 10, 30, 40, 60, 90], 4   )
-func_cow([1, 2, 8, 4, 9], 3)
-func_cow([2, 5, 7, 11, 15, 20], 3)
+if __name__ == '__main__':
+    # root = TreeNode(10)
+    #     # root.left = TreeNode(11)
+    #     # root.left.left = TreeNode(2)
+    #     # root.left.right = TreeNode(31)
+    #     # root.right = TreeNode(12)
+    root = TreeNode(1)
+    root.left = TreeNode(3)
+    root.right = TreeNode(2)
+    root.left.left = TreeNode(7)
+    root.left.right = TreeNode(4)
+    root.left.left.left = TreeNode(8)
+    root.left.right.right = TreeNode(5)
+    root.left.left.left.left = TreeNode(9)
+    root.left.right.right.right = TreeNode(6)
+
+    print("maximum_diameter:", root.maximum_diameter())
