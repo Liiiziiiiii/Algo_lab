@@ -1,75 +1,48 @@
-from collections import deque
+import unittest
+
+from main import Trie
 
 
-def BFS(graph, vis, start_node, x_nodes):
-    q = deque()
-    q.append(start_node)
-    vis[start_node] = True
-    x_component = set()
+class TestTrie(unittest.TestCase):
+    def setUp(self):
+        self.t = Trie()
 
-    while q:
-        node = q.popleft()
-        x_component.add(node)
+    def test_insert_and_search(self):
+        words_to_insert = ["apple", "banana", "cherry", "dog", "cat"]
+        for word in words_to_insert:
+            self.t.insert(word)
 
-        for neighbor in graph[node]:
-            if not vis[neighbor] and neighbor in x_nodes:
-                q.append(neighbor)
-                vis[neighbor] = True
+        self.assertTrue(self.t.search("apple"))
+        self.assertTrue(self.t.search("banana"))
+        self.assertTrue(self.t.search("cherry"))
+        self.assertTrue(self.t.search("dog"))
+        self.assertTrue(self.t.search("cat"))
 
-    return x_component
+    def test_search_non_existent_keys(self):
+        self.assertFalse(self.t.search("grape"))
+        self.assertFalse(self.t.search("elephant"))
+        self.assertFalse(self.t.search("xylophone"))
 
+    def test_search_prefix(self):
+        self.assertFalse(self.t.searchPrefix("ap"))
+        self.assertFalse(self.t.searchPrefix("ban"))
+        self.assertFalse(self.t.searchPrefix("che"))
+        self.assertFalse(self.t.searchPrefix("do"))
+        self.assertFalse(self.t.searchPrefix("ca"))
+        self.assertFalse(self.t.searchPrefix("xy"))
 
-def replace_component(matrix, component):
-    for node in component:
-        i, j = node
-        matrix[i][j] = 'C'
+    def test_case_insensitive_keys(self):
+        t_case_insensitive = Trie()
+        words_case_insensitive = ["Apple", "Banana", "Cherry", "Dog", "Cat"]
+        for word in words_case_insensitive:
+            t_case_insensitive.insert(word.lower())
 
-
-def main(matrix):
-    rows = len(matrix)
-    cols = len(matrix[0])
-    vis = {(i, j): False for i in range(rows) for j in range(cols)}
-    graph = {}  # Граф для сусідів  вузла
-    change_value = set()  # Вузли зі значенням "X"
-
-
-    for i in range(rows):
-        for j in range(cols):
-            if matrix[i][j] == 'X':
-                change_value.add((i, j))
-
-            neighbors = []
-            if i > 0 and matrix[i - 1][j] != 'X':
-                neighbors.append((i - 1, j))
-            if j > 0 and matrix[i][j - 1] != 'X':
-                neighbors.append((i, j - 1))
-            if i < rows - 1 and matrix[i + 1][j] != 'X':
-                neighbors.append((i + 1, j))
-            if j < cols - 1 and matrix[i][j + 1] != 'X':
-                neighbors.append((i, j + 1))
-
-            graph[(i, j)] = neighbors
-
-    for x_node in change_value:
-        if not vis[x_node]:
-            x_component = BFS(graph, vis, x_node, change_value)
-            replace_component(matrix, x_component)
+        self.assertTrue(t_case_insensitive.search("apple"))
+        self.assertTrue(t_case_insensitive.search("Banana"))
+        self.assertTrue(t_case_insensitive.search("ChErRy"))
+        self.assertTrue(t_case_insensitive.search("dog"))
+        self.assertTrue(t_case_insensitive.search("CAT"))
 
 
 if __name__ == '__main__':
-    matrix = [['Y', 'Y', 'Y', 'G', 'G', 'G', 'G', 'G', 'G', 'G'],
-              ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'G', 'X', 'X', 'X'],
-              ['G', 'G', 'G', 'G', 'G', 'G', 'G', 'X', 'X', 'X'],
-              ['W', 'W', 'W', 'W', 'W', 'G', 'G', 'G', 'G', 'X'],
-              ['W', 'R', 'R', 'R', 'R', 'R', 'G', 'X', 'X', 'X'],
-              ['W', 'W', 'W', 'R', 'R', 'G', 'G', 'X', 'X', 'X'],
-              ['W', 'B', 'W', 'R', 'R', 'R', 'R', 'R', 'R', 'X'],
-              ['W', 'B', 'B', 'B', 'B', 'R', 'R', 'X', 'X', 'X'],
-              ['W', 'B', 'B', 'X', 'B', 'B', 'B', 'B', 'X', 'X'],
-              ['W', 'B', 'B', 'X', 'X', 'X', 'X', 'X', 'X', 'X']]
-
-    main(matrix)
-
-    # Виведіть оновлену матрицю
-    for row in matrix:
-        print(" ".join(row))
+    unittest.main()
