@@ -1,72 +1,104 @@
-from collections import deque
+import copy
+from collections import defaultdict
 
 
-def BFS(graph, vis, start_node, value):
-    q = deque()
-    q.append(start_node)
-    vis[start_node] = True
-    x_component = set()
+def is_similar(strq1, str2):
+    for i in range(len(strq1)):
+        if strq1[:i] + strq1[i + 1:] == str2:
+            return True
 
-    while q:
-        node = q.popleft()
-        x_component.add(node)
-
-        for neighbor in graph[node]:
-            if not vis[neighbor] and neighbor in value:
-                q.append(neighbor)
-                vis[neighbor] = True
-
-    return x_component
+    return False
 
 
-def main(matrix):
-    rows = len(matrix)
-    cols = len(matrix[0])
-    vis = {(i, j): False for i in range(rows) for j in range(cols)}
-    graph = {}  # Граф для сусідів  вузла
-    change_value = set()
+def similar(strq1, str2, m, n, dp):
+    if m == 0 or n == 0:
+        return 0
 
-    for i in range(rows):
-        for j in range(cols):
-            if matrix[i][j] == 'X':
-                change_value.add((i, j))
+    if dp[m][n] != -1:
+        return dp[m][n]
 
-            neighbors = []
-            if i > 0:
-                neighbors.append((i - 1, j))
-            if j > 0:
-                neighbors.append((i, j - 1))
-            if i < rows - 1:
-                neighbors.append((i + 1, j))
-            if j < cols - 1:
-                neighbors.append((i, j + 1))
+    if strq1[m - 1] == str2[n - 1]:
+        dp[m][n] = 1 + similar(strq1, str2, m - 1, n - 1, dp)
+        return dp[m][n]
 
-            graph[(i, j)] = neighbors
-
-    for value in change_value:
-        if not vis[value]:
-            change_value = BFS(graph, vis, value, change_value)
-            for node in change_value:
-                i, j = node
-                matrix[i][j] = 'C'
+    dp[m][n] = max(similar(strq1, str2, m, n - 1, dp), similar(strq1, str2, m - 1, n, dp))
+    return dp[m][n]
 
 
-if __name__ == '__main__':
-    matrix = [['Y', 'Y', 'Y', 'G', 'G', 'G', 'G', 'G', 'G', 'G'],
-              ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'G', 'X', 'X', 'X'],
-              ['G', 'G', 'G', 'G', 'G', 'G', 'G', 'X', 'X', 'X'],
-              ['W', 'W', 'W', 'W', 'W', 'G', 'G', 'G', 'G', 'X'],
-              ['W', 'R', 'R', 'R', 'R', 'R', 'G', 'X', 'X', 'X'],
-              ['W', 'W', 'W', 'R', 'R', 'G', 'G', 'X', 'X', 'X'],
-              ['W', 'B', 'W', 'R', 'R', 'R', 'R', 'R', 'R', 'X'],
-              ['W', 'B', 'B', 'B', 'B', 'R', 'R', 'X', 'X', 'X'],
-              ['W', 'B', 'B', 'X', 'B', 'B', 'B', 'B', 'X', 'X'],
-              ['W', 'B', 'B', 'X', 'X', 'X', 'X', 'X', 'X', 'X']]
+def build_graph(arr):
+    graph = defaultdict(list)
+    n = len(arr)
+    count = 0
 
-    main(matrix)
+    number = [[0 for _ in range(n)] for _ in range(n)]
 
-    file = open("Result_2.txt", 'w')
+    for i in range(n):
+        m = len(arr[i])
+        copy_arr = [word for word in arr[:i] + arr[i + 1:] if len(word) == m - 1]
+        for y in range(len(copy_arr)):
+            count += 1
+            k = len(copy_arr[y])
+            # print("copy_arr[i] - ", arr[i], "         ||           copy_arr[y]", copy_arr[y])
+            cheak = is_similar(arr[i], copy_arr[y])
+            if k == m - 1 and cheak:
+                number[i][y] = similar(arr[i], copy_arr[y], m, k, [[-1] * (k + 1) for _ in range(m + 1)])
+                # print(arr[i], " + ", copy_arr[y], " = ", number[i][y], cheak)
+                if number[i][y] > 0:
+                    graph[arr[i]].append((copy_arr[y], number[i][y]))
+    print("build_graph ", count)
 
-    for row in matrix:
-        print(" ".join(row))
-        file.write(" ".join(row))
+    return graph
+
+
+def find_chain(graph, start_word):
+    count = 1
+    start_nodes = [start_word]
+
+    def compare_nodes(node1, node2):
+        weight1 = max(graph[node1], key=lambda x: x[1])[1] if node1 in graph else 0
+        weight2 = max(graph[node2], key=lambda x: x[1])[1] if node2 in graph else 0
+
+        if weight1 != weight2:
+            return weight1 - weight2
+        else:
+            return len(node2) - len(node1)
+
+    for start_node in start_nodes:
+        current_node = start_node
+        chain = [current_node]
+
+        while current_node in graph:
+            next_node = max(graph[current_node], key=lambda x: compare_nodes(x[0], current_node))[0]
+            chain.append(next_node)
+            current_node = next_node
+            count += 1
+
+        # print(" > ".join(chain))
+
+    return chain
+
+
+def find_chain_all(graph):
+    max_len = 0
+    for current in graph:
+        current_chain = find_chain(graph, current)
+        max_len = max(max_len, len(current_chain))
+
+        if len(current_chain) >= 7:
+            print(current, "         -----------------------")
+            print(current, len(current_chain))
+            print(" > ".join(current_chain))
+
+
+file_path = "input.txt"
+with open(file_path, 'r') as file:
+    arr = [line.strip() for line in file]
+
+graph = build_graph(arr)
+# find_chain(graph, "crates")
+
+
+# find_chain(graph, "breasts")
+find_chain_all(graph)
+
+
